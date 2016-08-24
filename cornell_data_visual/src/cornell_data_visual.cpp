@@ -1,0 +1,149 @@
+#include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include <boost/filesystem.hpp>
+#include <fstream>
+#include <string>
+static const std::string OPENCV_WINDOW = "Image window";
+
+
+int main(int argc, char** argv)
+{
+	int imNumMax = 110;
+	for (int i = 0; i < imNumMax; i++)
+	{
+		char img_dir[200];
+		sprintf(img_dir, "/media/chentao/0009EA76000B6766/RGBD Data/data/pcd%04dr.png", i);
+		boost::filesystem::path img_p(img_dir);
+		if (boost::filesystem::exists(img_p))
+		{
+			cv::Mat image = cv::imread(img_dir);
+			if (!image.data) continue;
+
+
+			cv::RNG rng(0);
+			char rect_pos_dir[200];
+			sprintf(rect_pos_dir, "/media/chentao/0009EA76000B6766/RGBD Data/data/pcd%04dcpos.txt", i);
+			boost::filesystem::path rect_pos_p(rect_pos_dir);
+			if (boost::filesystem::exists(rect_pos_p))
+			{
+				std::ifstream rectfile(rect_pos_dir);
+
+				if (rectfile.is_open())
+				{
+					std::vector< std::vector<cv::Point> > rects;
+					int count = 0;
+					std::vector<cv::Point> rectCorners;
+					std::string line;
+					while (std::getline(rectfile, line))
+					{
+						if (count < 4)
+						{
+							cv::Point temp;
+							std::stringstream lineStream(line);
+							int x;
+							int y;
+							lineStream >> x;
+							lineStream >> y;
+							// std::cout << "Pos:  x: " << x << "   y: " << y << std::endl;
+							temp.x = x;
+							temp.y = y;
+							rectCorners.push_back(temp);
+							count++;
+						}
+						if (count == 4)
+						{
+
+							// cv::Scalar color(rng.uniform(0,255), rng.uniform(0,255), rng.uniform(0,255));
+							cv::Scalar color1(0, 255, 0);
+							cv::Scalar color2(0, 125, 0);
+							for (int i = 0 ; i < 4; i++)
+							{
+								if (i % 2 != 0)
+								{
+									cv::line(image, rectCorners[i], rectCorners[(i + 1) % 4], color1, 2, cv::LINE_8);
+								}
+								else
+								{
+									cv::line(image, rectCorners[i], rectCorners[(i + 1) % 4], color2, 2, cv::LINE_8);
+								}
+								
+							}
+							rects.push_back(rectCorners);
+							count = 0;
+							rectCorners.clear();
+						}
+					}
+				}
+				rectfile.close();
+
+			}
+
+
+			char rect_neg_dir[200];
+			sprintf(rect_neg_dir, "/media/chentao/0009EA76000B6766/RGBD Data/data/pcd%04dcneg.txt", i);
+			boost::filesystem::path rect_neg_p(rect_neg_dir);
+			if (boost::filesystem::exists(rect_neg_p))
+			{
+				std::ifstream rectfile(rect_neg_dir);
+
+				if (rectfile.is_open())
+				{
+					std::vector< std::vector<cv::Point> > rects;
+					int count = 0;
+					std::vector<cv::Point> rectCorners;
+					std::string line;
+					while (std::getline(rectfile, line))
+					{
+						if (count < 4)
+						{
+							cv::Point temp;
+							std::stringstream lineStream(line);
+							int x;
+							int y;
+							lineStream >> x;
+							lineStream >> y;
+							// std::cout << "Pos:  x: " << x << "   y: " << y << std::endl;
+							temp.x = x;
+							temp.y = y;
+							rectCorners.push_back(temp);
+							count++;
+						}
+						if (count == 4)
+						{
+
+							// cv::Scalar color(rng.uniform(0,255), rng.uniform(0,255), rng.uniform(0,255));
+							cv::Scalar color1(0, 0, 255);
+							cv::Scalar color2(0, 0, 125);
+							for (int i = 0 ; i < 4; i++)
+							{
+								if (i % 2 != 0)
+								{
+									cv::line(image, rectCorners[i], rectCorners[(i + 1) % 4], color1, 2, cv::LINE_8);
+								}
+								else
+								{
+									cv::line(image, rectCorners[i], rectCorners[(i + 1) % 4], color2, 2, cv::LINE_8);
+								}
+								
+							}
+							rects.push_back(rectCorners);
+							count = 0;
+							rectCorners.clear();
+						}
+					}
+				}
+				rectfile.close();
+
+			}
+			imshow(OPENCV_WINDOW, image);
+			cv::waitKey(3000);
+		}
+
+
+
+	}
+	return 0;
+}
+
+
+
